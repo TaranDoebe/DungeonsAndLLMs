@@ -1,16 +1,30 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from game.engine.player import Player
+from game.engine.enemy import Enemy
+from game.engine.combat_manager import CombatManager
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def main():
+    print("=== Welcome to Dungeons & LLMs ===")
+    name = input("Enter your name: ")
+    print("Choose your class:")
+    print("1. Warrior (High damage, high defense)")
+    print("2. Rogue (Lower damage, faster turns later?)")
+    class_choice = input("Enter 1 or 2: ")
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    if class_choice == "1":
+        player_class = "Warrior"
+    elif class_choice == "2":
+        player_class = "Rogue"
+    else:
+        print("Invalid choice. Defaulting to Warrior.")
+        player_class = "Warrior"
+
+    player = Player(name=name, player_class=player_class)
+    enemy = Enemy(name="Goblin", hp=30, attack_power=5)
+    combat = CombatManager(player, enemy)
+
+    combat.fight()
+
+
+if __name__ == "__main__":
+    main()
