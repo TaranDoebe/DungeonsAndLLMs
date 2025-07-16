@@ -1,0 +1,13 @@
+{
+  "player": {
+    "name": "Taran",
+    "class": "Warrior",
+    "hp": 100
+  },
+  "enemy": {
+    "name": "Fizzleworm",
+    "hp": -8,
+    "description": "A slimy, burrowing creature that can emit a high-pitched whine to stun its prey."
+  },
+  "last_action": "rested"
+}

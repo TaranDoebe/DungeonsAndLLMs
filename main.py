@@ -1,44 +1,101 @@
-from game.ai.llm_generator import generate_monster
-
+import json
+from game.ai.story_engine import generate_story_event
+from game.engine.enemy import Enemy
+from game.engine.player import Player
+from game.engine.combat_manager import CombatManager
+from game.utils.game_state import save_state, load_state
+from game.ai.llm_generator import generate_monster, clean_llm_output
 
 def main():
-    prompt = (
-        "Create a level 1 fantasy monster. Output JSON with keys: name (string), hp (5–30), "
-        "attack_power (1–10), and description (1 sentence).\n\n"
-        "{"
-    )
+    state = load_state()
+    player_data = state.get("player") or {
+        "name": "Taran",
+        "class": "Warrior",
+        "hp": 100
+    }
+    player = Player(name=player_data["name"], player_class=player_data["class"])
+    player.hp = player_data["hp"]
 
-    result = generate_monster(prompt)
-    print("Generated raw text:\n")
-    print(result)
+    print("\n📜 Welcome back to Dungeons & LLMs!")
 
-# from game.engine.player import Player
-# from game.engine.enemy import Enemy
-# from game.engine.combat_manager import CombatManager
-#
-#
-# def main():
-#     print("=== Welcome to Dungeons & LLMs ===")
-#     name = input("Enter your name: ")
-#     print("Choose your class:")
-#     print("1. Warrior (High damage, high defense)")
-#     print("2. Rogue (Lower damage, faster turns later?)")
-#     class_choice = input("Enter 1 or 2: ")
-#
-#     if class_choice == "1":
-#         player_class = "Warrior"
-#     elif class_choice == "2":
-#         player_class = "Rogue"
-#     else:
-#         print("Invalid choice. Defaulting to Warrior.")
-#         player_class = "Warrior"
-#
-#     player = Player(name=name, player_class=player_class)
-#     enemy = Enemy(name="Goblin", hp=30, attack_power=5)
-#     combat = CombatManager(player, enemy)
-#
-#     combat.fight()
-#
+    # Show story if we have one
+    if state.get("last_action") == "combat_won":
+        story = generate_story_event(state)
+        print("\n📖 Your story continues...\n")
+        print(story)
+
+    while True:
+        print("\n🌟 What would you like to do?")
+        print("1. Continue your journey (fight new monster)")
+        print("2. Rest and recover (+10 HP)")
+        print("3. View player info")
+        print("4. Quit game")
+
+        choice = input("Enter choice (1-4): ").strip()
+
+        if choice == "1":
+            # Generate and fight a new monster
+            raw = generate_monster(
+                "Create a level 1 fantasy monster. Respond in JSON format:\n"
+                '{ "name": ..., "hp": ..., "attack_power": ..., "description": ... }'
+            )
+            print("🔍 Raw LLM output:\n", repr(raw))  # Add this line
+            cleaned = clean_llm_output(raw)
+            try:
+                monster_data = json.loads(cleaned)
+            except json.JSONDecodeError:
+                print("❌ LLM output error, try again.")
+                continue
+
+            enemy = Enemy(
+                name=monster_data["name"],
+                hp=monster_data["hp"],
+                attack_power=monster_data["attack_power"]
+            )
+
+            print(f"\n⚔️  You encounter a {enemy.name}!")
+            print(f"📜  {monster_data['description']}\n")
+
+            combat = CombatManager(player, enemy)
+            combat.fight()
+
+            state = {
+                "player": {
+                    "name": player.name,
+                    "class": player.player_class,
+                    "hp": player.hp
+                },
+                "enemy": {
+                    "name": enemy.name,
+                    "hp": enemy.hp,
+                    "description": monster_data["description"]
+                },
+                "last_action": "combat_won" if enemy.hp <= 0 else "fled"
+            }
+            save_state(state)
+            print("💾 Game state saved.")
+            break  # return to menu on next run
+
+        elif choice == "2":
+            player.hp = min(player.hp + 10, 100)
+            print(f"❤️ You rest and recover to {player.hp} HP.")
+            state["player"] = {
+                "name": player.name,
+                "class": player.player_class,
+                "hp": player.hp
+            }
+            state["last_action"] = "rested"
+            save_state(state)
+
+        elif choice == "3":
+            print(f"\n👤 {player.name} the {player.player_class} | HP: {player.hp}")
+
+        elif choice == "4":
+            print("👋 Goodbye!")
+            break
+
+        else:
+            print("❓ Invalid choice, try again.")
 
 if __name__ == "__main__":
     main()

@@ -1,8 +1,9 @@
 class Player:
-    def __init__(self, name: str, player_class: str):
+
+    def __init__(self, name, player_class, hp=100):
         self.name = name
         self.player_class = player_class
-        self.hp = 100
+        self.hp = hp
         self.attack_power = 10 if player_class == "Warrior" else 7
         self.defense = 5 if player_class == "Warrior" else 3
 
