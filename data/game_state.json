@@ -5,9 +5,9 @@
     "hp": 100
   },
   "enemy": {
-    "name": "Fizzleworm",
+    "name": "Snurflot",
     "hp": -8,
-    "description": "A slimy, burrowing creature that can emit a high-pitched whine to stun its prey."
+    "description": "A fluffy, snout-nosed creature that can summon a cloud of noxious gas to disorient its foes."
   },
-  "last_action": "rested"
+  "last_action": "Draw my sword, prepared to face the creature in battle."
 }
